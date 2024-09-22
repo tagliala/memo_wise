@@ -26,36 +26,6 @@ re_namespaced_gems = [
       memoization_method: :memo_wise,
     },
   ),
-  GemBench::Jersey.new(
-    gem_name: "alt_memery",
-    trades: {
-      "Memery" => "AltMemery"
-    },
-    metadata: {
-      activation_code: "include AltMemery",
-      memoization_method: :memoize,
-    },
-  ),
-  GemBench::Jersey.new(
-    gem_name: "memoist3",
-    trades: {
-      "Memoist" => "MemoistThree"
-    },
-    metadata: {
-      activation_code: "extend MemoistThree",
-      memoization_method: :memoize,
-    },
-  ),
-  GemBench::Jersey.new(
-    gem_name: "memoist",
-    trades: {
-      "Memoist" => "MemoistOne"
-    },
-    metadata: {
-      activation_code: "extend MemoistOne",
-      memoization_method: :memoize,
-    },
-  ),
 ].each(&:doff_and_don) # Copies, re-namespaces, and requires each gem.
 
 # We've already installed the `memo_wise` version on the `main` branch from GitHub in the
@@ -119,11 +89,6 @@ benchmarked_gems = re_namespaced_gems.select(&:required?).map do |re_namespaced_
 end
 benchmarked_gems.push(
   BenchmarkGem.new(MemoWise, "prepend MemoWise", :memo_wise, LOCAL_BENCHMARK_NAME),
-  (BenchmarkGem.new(DDMemoize, "DDMemoize.activate(self)", :memoize, "ddmemoize") if defined?(DDMemoize)),
-  (BenchmarkGem.new(Dry::Core, "include Dry::Core::Memoizable", :memoize, "dry-core") if defined?(Dry::Core)),
-  (BenchmarkGem.new(Memery, "include Memery", :memoize, "memery") if defined?(Memery)),
-  (BenchmarkGem.new(Memoized, "include Memoized", :memoize, "memoized") if defined?(Memoized)),
-  (BenchmarkGem.new(Memoizer, "include Memoizer", :memoize, "memoizer") if defined?(Memoizer))
 )
 BENCHMARK_GEMS = benchmarked_gems.compact.shuffle
 
@@ -190,68 +155,12 @@ N_RESULT_DECIMAL_DIGITS = 2
 # result value, so our benchmark only tests memoized retrieval time.
 benchmark_lambdas = [
   lambda do |x, instance, benchmark_gem|
-    instance.no_args
-
-    x.report("#{benchmark_gem.benchmark_name}: ()") do
-      instance.no_args
-    end
-  end,
-  lambda do |x, instance, benchmark_gem|
-    instance.one_positional_arg(1)
-
-    x.report("#{benchmark_gem.benchmark_name}: (a)") do
-      instance.one_positional_arg(1)
-    end
-  end,
-  lambda do |x, instance, benchmark_gem|
-    instance.positional_args(1, 2)
-
-    x.report("#{benchmark_gem.benchmark_name}: (a, b)") do
-      instance.positional_args(1, 2)
-    end
-  end,
-  lambda do |x, instance, benchmark_gem|
-    instance.one_keyword_arg(a: 1)
-
-    x.report("#{benchmark_gem.benchmark_name}: (a:)") do
-      instance.one_keyword_arg(a: 1)
-    end
-  end,
-  lambda do |x, instance, benchmark_gem|
-    instance.keyword_args(a: 1, b: 2)
-
-    x.report("#{benchmark_gem.benchmark_name}: (a:, b:)") do
-      instance.keyword_args(a: 1, b: 2)
-    end
-  end,
-  lambda do |x, instance, benchmark_gem|
-    instance.positional_and_keyword_args(1, b: 2)
-
-    x.report("#{benchmark_gem.benchmark_name}: (a, b:)") do
-      instance.positional_and_keyword_args(1, b: 2)
-    end
-  end,
-  lambda do |x, instance, benchmark_gem|
-    instance.positional_and_splat_args(1, 2)
-
-    x.report("#{benchmark_gem.benchmark_name}: (a, *args)") do
-      instance.positional_and_splat_args(1, 2)
-    end
-  end,
-  lambda do |x, instance, benchmark_gem|
     instance.keyword_and_double_splat_args(a: 1, b: 2)
 
     x.report("#{benchmark_gem.benchmark_name}: (a:, **kwargs)") do
       instance.keyword_and_double_splat_args(a: 1, b: 2)
     end
   end,
-  lambda do |x, instance, benchmark_gem|
-    instance.positional_splat_keyword_and_double_splat_args(1, 2, b: 3, a: 4)
-
-    x.report("#{benchmark_gem.benchmark_name}: (a, *args, b:, **kwargs)") do
-      instance.positional_splat_keyword_and_double_splat_args(1, 2, b: 3, a: 4)
-    end
-  end
 ]
 
 # We benchmark different cases separately, to ensure that slow performance in
